@@ -37,3 +37,16 @@ replaceIthItem(Item,[H|T],I,[H|T1]):-
                                          I \= 0,
 										 I1 is I - 1,
                                          replaceIthItem(Item,T,I1,T1).
+fillZeros(String,0,String).
+fillZeros(String,N,R):-
+    N >= 0,
+    N1 is N - 1,
+    fillZeros(String,N1,R1),
+    string_concat(0,R1,R).
+										 
+logBase2(1,0).
+logBase2(N,Res):-
+                 N > 1,
+                 N1 is N // 2,
+                 logBase2(N1,Res1),
+                 Res is Res1 + 1.
