@@ -48,9 +48,7 @@ logBase2(N,Res):-
 getNumBits(_,fullyAssoc,_,0).
 
 getNumBits(NumSets,setAssoc,List,NumBits):-
-                                             length(List,N),
-											 N1 is N/NumSets,
-											 logBase2(N1,NumBits).
+											 logBase2(NumSets,NumBits).
 getNumBits(_,directMap,List,NumBits):-
                                              length(List,N),
 											 logBase2(N,NumBits).
