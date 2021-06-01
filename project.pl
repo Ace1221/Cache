@@ -1,4 +1,4 @@
-:- use_module(library(clpfd)).
+%-------------------------------------------------------------------------------------------------------------------------------------------%
 sum_list(L,X):-
                   sum_list(L,0,X).
 sum_list([],X,X).
@@ -18,9 +18,9 @@ convertBinToDec(Bin,Pos,List,Dec):-
 									 append(List,[In],List1),
 									 Pos1 is Pos+1,
 									 convertBinToDec(Rest,Pos1,List1,Dec).
+%-------------------------------------------------------------------------------------------------------------------------------------------%
 splitEvery(Num, List, Res):-
-                                 splitEvery(Num,0,[],List,Res).
-								 
+                                                 splitEvery(Num,0,[],List,Res).
 splitEvery(_,_,AccList,[],[AccList]).
 splitEvery(Num,Num,AccList,List,[ResH|ResT]):-
                                                  List \= [],
@@ -31,22 +31,34 @@ splitEvery(Num,Acc,AccList,[H|T],Res):-
                                                  append(AccList,[H],AccList1),
 								                 Acc1 is Acc+1,
 								                 splitEvery(Num,Acc1,AccList1,T,Res).
-												 
+%-------------------------------------------------------------------------------------------------------------------------------------------%
 replaceIthItem(Item,[_|T],0,[Item|T]).
 replaceIthItem(Item,[H|T],I,[H|T1]):-
                                          I \= 0,
 										 I1 is I - 1,
                                          replaceIthItem(Item,T,I1,T1).
-fillZeros(String,0,String).
-fillZeros(String,N,R):-
-    N >= 0,
-    N1 is N - 1,
-    fillZeros(String,N1,R1),
-    string_concat(0,R1,R).
-										 
+%-------------------------------------------------------------------------------------------------------------------------------------------%			 
 logBase2(1,0).
 logBase2(N,Res):-
-                 N > 1,
-                 N1 is N // 2,
-                 logBase2(N1,Res1),
-                 Res is Res1 + 1.
+                     N > 1,
+                     N1 is N // 2,
+                     logBase2(N1,Res1),
+                     Res is Res1 + 1.
+%-------------------------------------------------------------------------------------------------------------------------------------------%
+getNumBits(_,fullyAssoc,_,0).
+
+getNumBits(NumSets,setAssoc,List,NumBits):-
+                                             length(List,N),
+											 N1 is N/NumSets,
+											 logBase2(N1,NumBits).
+getNumBits(_,directMap,List,NumBits):-
+                                             length(List,N),
+											 logBase2(N,NumBits).
+%-------------------------------------------------------------------------------------------------------------------------------------------%
+fillZeros(S,0,S).
+fillZeros(S,N,R):-
+                     N > 0,
+                     N1 is N - 1,
+                     fillZeros(S,N1,R1),
+                     string_concat("0",R1,R).
+%-------------------------------------------------------------------------------------------------------------------------------------------%
