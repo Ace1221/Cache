@@ -79,9 +79,8 @@ getDataFromCache(StringAddress
 											 number_string(NumAddress,StringAddress),
 											 convertAddress(NumAddress,BitsNum,TagNum,IdxNum,directMap),
 											 convertBinToDec(IdxNum,Target),
-											 HopsNum is Target-1,
 											 nth0(Target,Cache,Result),
-											 Result = item(tag(Tag),data(Data),1,_),
+											 Result = item(tag(Tag),data(Data),1,HopsNum),
 											 number_string(TagNum, Tag).
 											 
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
@@ -100,7 +99,8 @@ convertAddress(Bin,BitsNum,Tag,Idx,directMap):-
 %-----------------------------------------------------------------   Fully Associative   ----------------------------------------------------------------%
 
 getDataFromCache(StringAddress, [item(tag(StringAddress),data(Data),HopsNum,_)|_], 
-Data, HopsNum, fullyAssoc, BitsNum).
+Data, HopsNum, fullyAssoc, _).
+
 getDataFromCache(StringAddress,[item(tag(X),data(_),_,_)|T]
 ,Data,HopsNum,fullyAssoc,BitsNum):-
                                                              \+(X == StringAddress),
@@ -134,8 +134,7 @@ Cache,Data,HopsNum,setAssoc,SetsNum):-
 										 Fill is RequiredLength - TagLength,
 										 fillZeros(TagString,Fill,TagString1),
 										 Res = item(tag(TagString1),data(Data),1,_),
-										 HopsNum = Location,
-										 member(Res,CacheLocation).
+										 nth0(HopsNum,CacheLocation,Res).
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 convertAddress(Bin,1,Bin,0,setAssoc).
 
