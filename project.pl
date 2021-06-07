@@ -97,8 +97,6 @@ convertAddress(Bin,BitsNum,Tag,Idx,directMap):-
 												 
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
-
-
 %-----------------------------------------------------------------   Fully Associative   ----------------------------------------------------------------%
 
 getDataFromCache(StringAddress, [item(tag(StringAddress),data(Data),HopsNum,_)|_], 
@@ -117,6 +115,42 @@ convertAddress(Bin,BitsNum,Tag,Idx,fullyAssoc):-
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
 
+%------------------------------------------------------------------   Set Associative    ----------------------------------------------------------------%
+
+
+getDataFromCache(StringAddress,
+Cache,Data,HopsNum,setAssoc,SetsNum):-
+                                         number_string(NumAddress, StringAddress),
+										 convertAddress(NumAddress, SetsNum, TagNum, IdxNum, setAssoc),
+										 length(Cache,L),
+										 Split is L / SetsNum ,
+										 splitEvery(Split,Cache,CacheSet),
+										 convertBinToDec(IdxNum,Location),
+										 nth0(Location,CacheSet,CacheLocation),
+										 number_string(TagNum,TagString),
+										 string_length(TagString,TagLength),
+										 getNumBits(SetsNum,setAssoc,_,IdxBits),
+										 RequiredLength is 6 - IdxBits,
+										 Fill is RequiredLength - TagLength,
+										 fillZeros(TagString,Fill,TagString1),
+										 Res = item(tag(TagString1),data(Data),1,_),
+										 HopsNum = Location,
+										 member(Res,CacheLocation).
+%--------------------------------------------------------------------------------------------------------------------------------------------------------%
+convertAddress(Bin,1,Bin,0,setAssoc).
+
+convertAddress(Bin,SetsNum,Tag,Idx,setAssoc):-
+                                                 getNumBits(SetsNum,setAssoc,_,IdxBits),
+												 number_string(Bin,BinString),
+												 string_length(BinString,N),
+												 Fill is 6-N,
+												 fillZeros(BinString,Fill,BinString1),
+                                                 string_concat(Tag1,Idx1,BinString1),
+												 string_length(Idx1,IdxBits),
+                                                 number_string(Tag,Tag1),
+                                                 number_string(Idx,Idx1).
+
+                               
 %---------------------------------------------------------------- Replacing Blocks ----------------------------------------------------------------------%
 
 replaceInCache(Tag,Idx,Mem,OldCache
