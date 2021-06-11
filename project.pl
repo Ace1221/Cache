@@ -74,13 +74,13 @@ fillZeros(S,N,R):-
 
 %-----------------------------------------------------------------      Direct Map       ----------------------------------------------------------------%
 getDataFromCache(StringAddress
-,Cache,Data,HopsNum,directMap,BitsNum):-
+,Cache,Data,0,directMap,BitsNum):-
 										     getNumBits(_,directMap,Cache,BitsNum),
 											 number_string(NumAddress,StringAddress),
 											 convertAddress(NumAddress,BitsNum,TagNum,IdxNum,directMap),
 											 convertBinToDec(IdxNum,Target),
 											 nth0(Target,Cache,Result),
-											 Result = item(tag(Tag),data(Data),1,HopsNum),
+											 Result = item(tag(Tag),data(Data),1,_),
 											 number_string(TagNum, Tag).
 											 
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
