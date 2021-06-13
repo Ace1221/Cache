@@ -97,20 +97,13 @@ convertAddress(Bin,BitsNum,Tag,Idx,directMap):-
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
 %-----------------------------------------------------------------   Fully Associative   ----------------------------------------------------------------%
-
-getDataFromCache(StringAddress, [item(tag(StringAddress),data(Data),HopsNum,_)|_], 
-Data, HopsNum, fullyAssoc, _).
-
-getDataFromCache(StringAddress,[item(tag(X),data(_),_,_)|T]
-,Data,HopsNum,fullyAssoc,BitsNum):-
-                                                             \+(X == StringAddress),
-                                                              getDataFromCache(StringAddress,T,Data,HopsNum,fullyAssoc,BitsNum).
+getDataFromCache(StringAddress,Cache
+,Data,HopsNum,fullyAssoc,0):-
+                                     nth0(HopsNum,Cache,item(tag(StringAddress),data(Data),1,_)).
 
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
-convertAddress(Bin,BitsNum,Tag,Idx,fullyAssoc):-
-                                                     atom_number(Tag1, Bin),
-                                                     atom_number(Tag1, Tag).
+convertAddress(Bin,BitsNum,Bin,Idx,fullyAssoc).
 													 
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
@@ -170,26 +163,128 @@ replaceInCache(Tag,Idx,Mem,OldCache
 										 convertBinToDec(Idx,NumCacheIndex),
 										 replaceIthItem(item(tag(TagString1),data(ItemData),1,0),OldCache,NumCacheIndex,NewCache).
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
+										 
+replaceInCache(Tag,_,Mem,OldCache
+,NewCache,ItemData,fullyAssoc,_):-
+                                          number_string(Tag,TagString),
+										  string_length(TagString,L),
+										  Fill is 6 - L,
+										  fillZeros(TagString,Fill,TagStringFilled),
+										  convertBinToDec(Tag,TagDec),
+										  nth0(TagDec,Mem,ItemData),
+										  replaceHelper(OldCache,OldCacheIncremented),
+										  replaceGetInvalidBit(OldCacheIncremented,0,IdxReplace),
+										  replaceIthItem(item(tag(TagStringFilled),data(ItemData),1,0),OldCacheIncremented,IdxReplace,NewCache).
+										  
+replaceInCache(Tag,_,Mem,OldCache
+,NewCache,ItemData,fullyAssoc,_):-
+                                          number_string(Tag,TagString),
+										  string_length(TagString,L),
+										  Fill is 6 - L,
+										  fillZeros(TagString,Fill,TagStringFilled),
+										  convertBinToDec(Tag,TagDec),
+										  nth0(TagDec,Mem,ItemData),
+										  replaceHelper(OldCache,OldCacheIncremented),
+										  \+replaceGetInvalidBit(OldCacheIncremented,0,_),
+										  length(OldCacheIncremented,L1),
+										  BiggestOrder is L1,
+										  nth0(IdxReplace,OldCacheIncremented,item(tag(_),data(_),1,BiggestOrder)),
+										  replaceIthItem(item(tag(TagStringFilled),data(ItemData),1,0),OldCacheIncremented,IdxReplace,NewCache).
+
+%--------------------------------------------------------------------------------------------------------------------------------------------------------%
+replaceInCache(Tag,Idx,Mem,OldCache
+,NewCache,ItemData,setAssoc,SetsNum):-
+                                         number_string(Tag,TagString),
+										 string_length(TagString,N),
+										 getNumBits(SetsNum,setAssoc,_,BitsNum),
+										 N1 is 6 - BitsNum,
+										 Ndiff is N1 - N,
+										 fillZeros(TagString,Ndiff,TagString1),
+										 number_string(Idx,IdxString),
+										 string_length(IdxString,Ni),
+										 NiDiff is BitsNum-Ni,
+										 fillZeros(IdxString,NiDiff,IdxString1),
+                                         string_concat(TagString1,IdxString1,StringMemAddress),
+										 number_string(NumMemAddress, StringMemAddress),
+										 convertBinToDec(NumMemAddress,NumMemIndex),
+										 nth0(NumMemIndex,Mem,ItemData),
+										 length(OldCache,L),
+										 convertBinToDec(Idx,IdxSubList),
+										 Split is L / SetsNum ,
+										 splitEvery(Split,OldCache,OldCacheRes),
+										 nth0(IdxSubList,OldCacheRes,TargetList),
+										 replaceHelper(TargetList,OldCacheIncremented),
+										 replaceGetInvalidBit(OldCacheIncremented,0,IdxReplace),
+										 replaceIthItem(item(tag(TagString1),data(ItemData),1,0),OldCacheIncremented,IdxReplace,NewCacheSubList),
+										 replaceIthItem(NewCacheSubList,OldCacheRes,IdxSubList,NewCacheUnflattened),
+										 flatten(NewCacheUnflattened,NewCache).
+										 
+replaceInCache(Tag,Idx,Mem,OldCache
+,NewCache,ItemData,setAssoc,SetsNum):-
+                                         number_string(Tag,TagString),
+										 string_length(TagString,N),
+										 getNumBits(SetsNum,setAssoc,_,BitsNum),
+										 N1 is 6 - BitsNum,
+										 Ndiff is N1 - N,
+										 fillZeros(TagString,Ndiff,TagString1),
+										 number_string(Idx,IdxString),
+										 string_length(IdxString,Ni),
+										 NiDiff is BitsNum-Ni,
+										 fillZeros(IdxString,NiDiff,IdxString1),
+                                         string_concat(TagString1,IdxString1,StringMemAddress),
+										 number_string(NumMemAddress, StringMemAddress),
+										 convertBinToDec(NumMemAddress,NumMemIndex),
+										 nth0(NumMemIndex,Mem,ItemData),
+										 length(OldCache,L),
+										 convertBinToDec(Idx,IdxSubList),
+										 Split is L / SetsNum ,
+										 splitEvery(Split,OldCache,OldCacheRes),
+										 nth0(IdxSubList,OldCacheRes,TargetList),
+										 replaceHelper(TargetList,OldCacheIncremented),
+										 \+replaceGetInvalidBit(OldCacheIncremented,0,_),
+										 length(OldCacheIncremented,L1),
+										 BiggestOrder is L1,
+										 nth0(IdxReplace,OldCacheIncremented,item(tag(_),data(_),1,BiggestOrder)),
+										 replaceIthItem(item(tag(TagString1),data(ItemData),1,0),OldCacheIncremented,IdxReplace,NewCachSublist),
+										 replaceIthItem(NewCacheSubList,OldCacheRes,IdxSubList,NewCacheUnflattened),
+										 flatten(NewCacheUnflattened,NewCache).
+										 
+%--------------------------------------------------------------------------------------------------------------------------------------------------------%
+
+replaceGetInvalidBit([item(tag(_),data(_),0,_)|_],Acc,Acc).
+replaceGetInvalidBit([item(tag(_),data(_),1,_)|T],Acc,N):-
+                                                             Acc1 is Acc+1,
+															 replaceGetInvalidBit(T,Acc1,N).
+replaceHelper([],[]).
+
+replaceHelper([item(tag(Tag),data(Data),1,Order)|T], 
+[item(tag(Tag),data(Data),1,Order1)|T1]):-  
+                                                     Order1 is Order+1,
+                                                     replaceHelper(T,T1).
+	
+replaceHelper([item(tag(Tag),data(Data),0,Order)|T], 
+[item(tag(Tag),data(Data),0,Order)|T1]):-  
+                                                     replaceHelper(T,T1).													 
+                                         
+%--------------------------------------------------------------------------------------------------------------------------------------------------------%
 
 
 %---------------------------------------------------------------- Main Predicates -----------------------------------------------------------------------%
-getData(StringAddress,OldCache,Mem,
-NewCache,Data,HopsNum,Type,BitsNum,hit):-
-                                             getDataFromCache(StringAddress,OldCache,Data,HopsNum,Type,BitsNum),
-                                             NewCache = OldCache.
-
-getData(StringAddress,OldCache,Mem,
-NewCache,Data,HopsNum,Type,BitsNum,miss):-
-                                             \+getDataFromCache(StringAddress,OldCache,Data,HopsNum,Type,BitsNum),
-                                             atom_number(StringAddress,Address),
-                                             convertAddress(Address,BitsNum,Tag,Idx,Type),
-                                             replaceInCache(Tag,Idx,Mem,OldCache,NewCache,Data,Type,BitsNum).
+getData(StringAddress,OldCache,Mem,NewCache,Data,HopsNum,Type,BitsNum,hit):-
+                                                                                 getDataFromCache(StringAddress,OldCache,Data,HopsNum,Type,BitsNum),
+                                                                                 NewCache = OldCache.
+getData(StringAddress,OldCache,Mem,NewCache,Data,HopsNum,Type,BitsNum,miss):-
+                                                                                 \+getDataFromCache(StringAddress,OldCache,Data,HopsNum,Type,BitsNum),
+                                                                                 atom_number(StringAddress,Address),
+                                                                                 convertAddress(Address,BitsNum,Tag,Idx,Type),
+                                                                                 replaceInCache(Tag,Idx,Mem,OldCache,NewCache,Data,Type,BitsNum).
 %--------------------------------------------------------------------------------------------------------------------------------------------------------%
 runProgram([],OldCache,_,OldCache,[],[],Type,_).
 
 runProgram([Address|AdressList],OldCache,Mem,FinalCache,
 [Data|OutputDataList],[Status|StatusList],Type,NumOfSets):-
-                                                             getNumBits(NumOfSets,Type,OldCache,BitsNum),
-                                                             getData(Address,OldCache,Mem,NewCache,Data,HopsNum,Type,BitsNum,Status),
-                                                             runProgram(AdressList,NewCache,Mem,FinalCache,OutputDataList,StatusList,
-                                                             Type,NumOfSets).
+                                                                 getNumBits(NumOfSets,Type,OldCache,BitsNum),
+                                                                 (Type = setAssoc, Num = NumOfSets; Type \= setAssoc, Num = BitsNum),
+                                                                 getData(Address,OldCache,Mem,NewCache,Data,HopsNum,Type,Num,Status),
+                                                                 runProgram(AdressList,NewCache,Mem,FinalCache,OutputDataList,StatusList,
+                                                                 Type,NumOfSets).
