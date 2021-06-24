@@ -2,6 +2,9 @@ data Item a = It Tag (Data a) Bool Int | NotPresent deriving (Show, Eq)
 data Tag = T Int deriving (Show, Eq)
 data Data a = D a deriving (Show, Eq)
 data Output a = Out (a, Int) | NoOutput deriving (Show, Eq)
+
+getDataFromCache:: (Integral b, Eq a) =>[Char] -> [Item a] -> [Char] -> b -> Output a
+convertAddress :: (Integral b1, Integral b2) => b1 -> b2 -> p -> (b1, b1)
 -- | ---------------------------------------------------------------convertBinToDec----------------------------------------------------------- -- |
 convertBinToDec :: Integral a => a -> a
 convertBinToDec a = convertBinToDecHelper a  0 
@@ -39,25 +42,26 @@ fillZeros s 0 = s
 fillZeros s num = ['0'] ++ fillZeros s (num-1) 
 
 -- | ---------------------------------------------------------------DirectMap----------------------------------------------------------------- -- |
-
 -- | -------------------------------------------------------------getDataFromCache------------------------------------------------------------ -- |
 toInt :: String -> Int
 toInt a = read a
 
-getDataFromCache:: (Integral b, Eq a) =>[Char] -> [Item a] -> [Char] -> b -> Output a
-
+getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "fullyAssoc") then Out (datta, 0) else NoOutput
+                                                           where
+																(tag,idx) = convertAddress (toInt stringAddress) 0 dataType
+																It (T t) (D datta) valid order = (cache !! (convertBinToDec idx))	
+																
 getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "directMap") then Out (datta, 0) else NoOutput
                                                            where
 																(tag,idx) = convertAddress (toInt stringAddress) bitsNum dataType
 																It (T t) (D datta) valid order = (cache !! (convertBinToDec idx))
-															  
+																
+														  
 
 -- | -------------------------------------------------------------convertAddress------------------------------------------------------------ -- |
-convertAddress :: (Integral b1, Integral b2) => b1 -> b2 -> p -> (b1, b1)
 convertAddress binAddress bitsNum dataType = convertAddressHelper binAddress bitsNum 0 0 "directMap"
+convertAddress binAddress bitsNum dataType = convertAddressHelper binAddress 0 0 0 "fullyAssoc"
 convertAddressHelper binAddress bitsNum counter idxAcc dataType | bitsNum == counter = (binAddress,idxAcc)
                                                                 | otherwise = convertAddressHelper (div binAddress 10) bitsNum (counter+1) 
 																              (idxAcc + ((10^counter) * (mod binAddress 10))) "directMap"
 																         
-																	 
-												 
