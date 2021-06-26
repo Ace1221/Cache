@@ -41,15 +41,14 @@ fillZeros :: [Char] -> Int -> [Char]
 fillZeros s 0 = s
 fillZeros s num = ['0'] ++ fillZeros s (num-1) 
 
--- | ---------------------------------------------------------------DirectMap----------------------------------------------------------------- -- |
 -- | -------------------------------------------------------------getDataFromCache------------------------------------------------------------ -- |
 toInt :: String -> Int
 toInt a = read a
 
-getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "fullyAssoc") then Out (datta, 0) else NoOutput
+getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "fullyAssoc") then Out (datta, order) else NoOutput
                                                            where
-																(tag,idx) = convertAddress (toInt stringAddress) 0 dataType
-																It (T t) (D datta) valid order = (cache !! (convertBinToDec idx))	
+																tag = toInt stringAddress
+																It (T t) (D datta) valid order = (cache !! (convertBinToDec tag))	
 																
 getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "directMap") then Out (datta, 0) else NoOutput
                                                            where
