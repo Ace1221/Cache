@@ -45,7 +45,7 @@ fillZeros s num = ['0'] ++ fillZeros s (num-1)
 toInt :: String -> Int
 toInt a = read a
 
-getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "fullyAssoc") then Out (datta, order) else NoOutput
+getDataFromCache stringAddress cache dataType bitsNum =  if (t == tag && valid == True && dataType == "fullyAssoc") then Out (datta, (convertBinToDec tag)) else NoOutput
                                                            where
 																tag = toInt stringAddress
 																It (T t) (D datta) valid order = (cache !! (convertBinToDec tag))	
